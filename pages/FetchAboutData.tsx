@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import Image from 'next/image';
 
-const BASE_URL = 'http://127.0.0.1:8000/api/about/';
+const BASE_URL = 'http://127.0.0.1:8000';
 
 type About = {
   id?: number;
@@ -11,7 +11,7 @@ type About = {
 };
 
 export default function FetchAboutData(): JSX.Element {
-  const [data, setData] = useState<About[]>([]);
+  const [data, setData] = useState<About>();
   const [id, setId] = useState<number>();
   const [image, setImage] = useState<File | string>('');
   const [text, setText] = useState<string>('');
@@ -24,10 +24,9 @@ export default function FetchAboutData(): JSX.Element {
     };
     const fetchData = async () => {
       await axios
-        .get(BASE_URL, config)
+        .get(`${BASE_URL}/api/about/1/`, config)
         .then((res: AxiosResponse) => setData(res.data));
     };
-
     fetchData();
   }, [updated]);
 
@@ -47,17 +46,9 @@ export default function FetchAboutData(): JSX.Element {
     const body = formData;
 
     await axios
-      .post(BASE_URL, body, config)
+      .post(`${BASE_URL}/api/about/`, body, config)
       .then(() => setUpdated(!updated))
       .catch((err) => alert(err));
-  };
-
-  //Aboutページの削除（IDを指定してね）
-  const onSubmitDelete = (): void => {
-    axios
-      .delete(`${BASE_URL}${id}/`)
-      .then(() => alert('Delete Success'))
-      .catch(() => alert('No exists ID'));
   };
 
   //Aboutページの更新
@@ -76,10 +67,18 @@ export default function FetchAboutData(): JSX.Element {
     const body = formData;
 
     await axios
-      .put(`${BASE_URL}${id}/`, body, config)
+      .put(`${BASE_URL}/api/about/${id}/`, body, config)
       .then((res) => {
         if (res.data.id) setUpdated(!updated);
       })
+      .catch(() => alert('No exists ID'));
+  };
+
+  //Aboutページの削除（IDを指定してね）
+  const onSubmitDelete = (): void => {
+    axios
+      .delete(`${BASE_URL}/api/about/${id}/`)
+      .then(() => alert('Delete Success'))
       .catch(() => alert('No exists ID'));
   };
 
@@ -175,22 +174,25 @@ export default function FetchAboutData(): JSX.Element {
       </div>
       <div className="w-1/2 ">
         <h2 className="font-bold">Get Image & Text</h2>
-        <ul className="grid grid-cols-2">
-          {data.map((_data) => (
-            <div className="my-3" key={_data.id}>
-              <div className="flex">
-                <li>{_data.id}</li> : <li>{_data.text}</li>
+        {data ? (
+          <ul className="grid grid-cols-2">
+            <div className="my-3">
+              <div className="flex flex-col">
+                <li>{data.id}</li>
+                <Image
+                  src={data.image}
+                  alt="トップ画像"
+                  width={250}
+                  height={200}
+                  priority
+                />
+                <li>{data.text}</li>
               </div>
-              <Image
-                src={_data.image}
-                alt="トップ画像"
-                width="250"
-                height="200"
-                priority
-              />
             </div>
-          ))}
-        </ul>
+          </ul>
+        ) : (
+          <div className="font-bold">NO DATA</div>
+        )}
       </div>
     </div>
   );
