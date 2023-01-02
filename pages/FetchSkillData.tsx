@@ -9,9 +9,10 @@ type Skill = {
 
 const BASE_URL = 'http://127.0.0.1:8000/api/skills/';
 
-export const FetchSkillData = (): JSX.Element => {
+export default function FetchSkillData(): JSX.Element {
   const [data, setData] = useState<Skill[]>([]);
   const [create, setCreate] = useState<Skill>({ title: '', color_code: '' });
+  const [updated, setUpdated] = useState<boolean>(false);
 
   useEffect(() => {
     axios.get(BASE_URL).then((res) => {
@@ -65,4 +66,4 @@ export const FetchSkillData = (): JSX.Element => {
       <button onClick={() => createSkill(create)}>create</button>
     </div>
   );
-};
+}
