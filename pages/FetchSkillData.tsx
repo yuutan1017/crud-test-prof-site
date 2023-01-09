@@ -79,7 +79,7 @@ export default function FetchSkillData(): JSX.Element {
   //削除
   const deleteSkillData = (): void => {
     axios
-      .delete(`${BASE_URL}/${id}/`)
+      .delete(`${BASE_URL}/${put.id}/`)
       .then(() => alert('Delete Success'))
       .catch(() => alert('No exists ID'));
   };
@@ -153,7 +153,7 @@ export default function FetchSkillData(): JSX.Element {
         onSubmit={putSkillData}
         className="flex flex-col mt-10 w-1/3 space-y-4"
       >
-        <h2>Edit</h2>
+        <h2>Edit / Delete</h2>
         <select
           id="id"
           className="border border-black"
@@ -201,18 +201,11 @@ export default function FetchSkillData(): JSX.Element {
         <button type="submit" className="border border-black">
           Edit
         </button>
-      </form>
-      <form
-        onSubmit={deleteSkillData}
-        className="flex flex-col mt-10 w-1/3 space-y-4"
-      >
-        <h2>Delete</h2>
-        <input
-          type="number"
+        <button
+          type="button"
           className="border border-black"
-          onChange={(e) => setId(parseInt(e.target.value))}
-        />
-        <button type="submit" className="border border-black">
+          onClick={() => deleteSkillData()}
+        >
           Delete
         </button>
       </form>
