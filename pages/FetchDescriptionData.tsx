@@ -7,10 +7,11 @@ type Description = {
 };
 
 const BASE_URL = 'http://127.0.0.1:8000/api/description';
+const initialValue = { id: '', description: '' };
 
 export default function FetchDescriptionData(): JSX.Element {
   const [data, setData] = useState<Description[]>([]);
-  const [post, setPost] = useState<Description>({ id: '', description: '' });
+  const [post, setPost] = useState<Description>(initialValue);
   const [updated, setUpdated] = useState<boolean>(false);
 
   const config = {
@@ -20,7 +21,9 @@ export default function FetchDescriptionData(): JSX.Element {
   };
 
   useEffect(() => {
-    axios.get(BASE_URL, config).then((res) => setData(res.data));
+    const fetchData = async () =>
+      await axios.get(BASE_URL, config).then((res) => setData(res.data));
+    fetchData();
   }, [updated]);
 
   const putDescription = async (e: { preventDefault: () => void }) => {
@@ -34,7 +37,7 @@ export default function FetchDescriptionData(): JSX.Element {
       .then((res) => {
         if (res.data.id) {
           setUpdated(!updated);
-          setPost({ id: '', description: '' });
+          setPost(initialValue);
         }
       })
       .catch((error) => alert(error));

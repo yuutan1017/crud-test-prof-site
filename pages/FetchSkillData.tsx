@@ -16,7 +16,6 @@ export default function FetchSkillData(): JSX.Element {
   const [data, setData] = useState<Skill[]>([]);
   const [create, setCreate] = useState<Skill>(initialValue);
   const [put, setPut] = useState<Skill>(initialValue);
-  const [id, setId] = useState<number>(0);
   const [updated, setUpdated] = useState<boolean>(false);
 
   const categorySwitch = (num: number) => {

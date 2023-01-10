@@ -2,52 +2,53 @@ import React, { useState, useEffect } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import Image from 'next/image';
 
-const BASE_URL = 'http://127.0.0.1:8000/api/about/1/';
-
 type About = {
   id?: number;
-  image: string;
+  image: HTMLImageElement;
   text: string;
 };
 
+const BASE_URL = 'http://127.0.0.1:8000/api/about/1/';
+const initialValue = { image: '', text: '' };
+
 export default function FetchAboutData(): JSX.Element {
   const [data, setData] = useState<About>();
-  const [image, setImage] = useState<File | string>('');
-  const [text, setText] = useState<string>('');
+  const [put, setPut] = useState(initialValue);
   const [updated, setUpdated] = useState<boolean>(false);
+
+  const config = {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'multipart/form-data',
+    },
+  };
 
   //Aboutページの一覧所得
   useEffect(() => {
-    const config = {
-      headers: { Accept: 'application/json' },
-    };
-    const fetchData = async () => {
-      await axios
-        .get(BASE_URL, config)
-        .then((res: AxiosResponse) => setData(res.data));
-    };
+    const fetchData = async () =>
+      await axios.get(BASE_URL, config).then((res) => {
+        setData(res.data);
+        setPut({ ...put, text: res.data.text });
+      });
     fetchData();
   }, [updated]);
 
   //Aboutページの更新
   const onSubmitPut = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    const config = {
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'multipart/form-data',
-      },
-    };
     const formData = new FormData();
-    formData.append('image', image);
-    formData.append('text', text);
+    formData.append('image', put.image);
+    formData.append('text', put.text);
 
     const body = formData;
 
     await axios
       .put(BASE_URL, body, config)
       .then((res: AxiosResponse) => {
-        if (res.data.id) setUpdated(!updated);
+        if (res.data.id) {
+          setUpdated(!updated);
+          setPut(initialValue);
+        }
       })
       .catch((error) => alert(error));
   };
@@ -62,7 +63,9 @@ export default function FetchAboutData(): JSX.Element {
             <input
               type="file"
               name="image"
-              onChange={(e: any) => setImage(e.target.files[0])}
+              onChange={(e: any) =>
+                setPut({ ...put, image: e.target.files[0] })
+              }
             />
           </div>
           <div className="flex flex-col mt-3">
@@ -71,7 +74,8 @@ export default function FetchAboutData(): JSX.Element {
               className="border border-stone-900 p-1"
               type="text"
               name="text"
-              onChange={(e: any) => setText(e.target.value)}
+              defaultValue={data?.text}
+              onChange={(e) => setPut({ ...put, text: e.target.value })}
             />
             <button
               className="my-3 p-2 border border-slate-900 rounded-full"
