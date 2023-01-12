@@ -1,146 +1,205 @@
-import React, { useState, useEffect } from 'react';
-import axios, { AxiosResponse } from 'axios';
+import React, { useState, useEffect, ChangeEvent } from 'react';
+import axios from 'axios';
 import Image from 'next/image';
+import Link from 'next/link';
 
-const BASE_URL = 'http://127.0.0.1:8000';
-
-type About = {
+type Work = {
   id?: number;
-  image: string;
-  text: string;
+  image: any;
+  title: string;
+  description: string;
+  url: string;
 };
 
+const BASE_URL = 'http://127.0.0.1:8000/api/works/';
+const initialValue = { id: 0, image: '', title: '', description: '', url: '' };
+
 export default function FetchWorkData(): JSX.Element {
-  const [data, setData] = useState<About>();
-  const [id, setId] = useState<number>();
-  const [image, setImage] = useState<File | string>('');
-  const [text, setText] = useState<string>('');
+  const [data, setData] = useState<Work[]>([]);
+  const [create, setCreate] = useState(initialValue);
+  const [put, setPut] = useState(initialValue);
   const [updated, setUpdated] = useState<boolean>(false);
+
+  const config = {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'multipart/form-data',
+    },
+  };
 
   //Aboutページの一覧所得
   useEffect(() => {
-    const config = {
-      headers: { Accept: 'application/json' },
-    };
     const fetchData = async () => {
-      await axios
-        .get(`${BASE_URL}/api/about/1/`, config)
-        .then((res: AxiosResponse) => setData(res.data));
+      await axios.get(BASE_URL, config).then((res) => setData(res.data));
     };
     fetchData();
   }, [updated]);
 
   //Aboutページの新規作成
-  const onSubmitPost = async (e: { preventDefault: () => void }) => {
+  const createWorkData = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    const config = {
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'multipart/form-data',
-      },
-    };
+
     const formData = new FormData();
-    formData.append('image', image);
-    formData.append('text', text);
+    formData.append('image', create.image);
+    formData.append('title', create.title);
+    formData.append('description', create.description);
+    formData.append('url', create.url);
 
     const body = formData;
 
     await axios
-      .post(`${BASE_URL}/api/about/`, body, config)
-      .then(() => setUpdated(!updated))
+      .post(BASE_URL, body, config)
+      .then(() => {
+        setUpdated(!updated);
+        setCreate(initialValue);
+      })
       .catch((err) => alert(err));
   };
 
   //Aboutページの更新
-  const onSubmitPut = async (e: { preventDefault: () => void }) => {
+  const editWorkData = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    const config = {
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'multipart/form-data',
-      },
-    };
+
     const formData = new FormData();
-    formData.append('image', image);
-    formData.append('text', text);
+    formData.append('image', put.image);
+    formData.append('title', put.title);
+    formData.append('description', put.description);
+    formData.append('url', put.url);
 
     const body = formData;
 
     await axios
-      .put(`${BASE_URL}/api/about/${id}/`, body, config)
+      .put(`${BASE_URL}${put.id}/`, body, config)
       .then((res) => {
         if (res.data.id) setUpdated(!updated);
       })
       .catch(() => alert('No exists ID'));
   };
 
-  //Aboutページの削除（IDを指定してね）
-  const onSubmitDelete = (): void => {
-    axios
-      .delete(`${BASE_URL}/api/about/${id}/`)
-      .then(() => alert('Delete Success'))
-      .catch(() => alert('No exists ID'));
+  // //Aboutページの削除（IDを指定してね）
+  // const onSubmitDelete = (): void => {
+  //   axios
+  //     .delete(`${BASE_URL}/api/about/${id}/`)
+  //     .then(() => alert('Delete Success'))
+  //     .catch(() => alert('No exists ID'));
+  // };
+
+  const complementDataById = (e: ChangeEvent<HTMLSelectElement>) => {
+    const _id = parseInt(e.target.value);
+    const _data = data.filter((i) => i.id === _id)[0];
+    setPut({
+      id: _id,
+      image: _data.image,
+      title: _data.title,
+      description: _data.description,
+      url: _data.url,
+    });
+    setUpdated(!updated);
   };
 
   return (
     <div className="flex flex-row mx-5 space-y-5 mt-10">
       <div className="flex flex-col w-1/2 px-5">
         <h2 className="font-bold">Post</h2>
-        <form className="w-1/3" onSubmit={onSubmitPost}>
+        <form className="w-1/3" onSubmit={createWorkData}>
           <div className="my-2">
             <label htmlFor="image">Image</label>
             <input
               type="file"
               name="image"
-              onChange={(e: any) => setImage(e.target.files[0])}
+              onChange={(e: any) =>
+                setCreate({ ...create, image: e.target.files[0] })
+              }
               required
             />
           </div>
           <div className="flex flex-col mt-3">
-            <label htmlFor="text">text</label>
+            <label htmlFor="title">title</label>
+            <input
+              className="border border-stone-900 p-1"
+              type="title"
+              name="text"
+              onChange={(e) => setCreate({ ...create, title: e.target.value })}
+              required
+            />
+            <label htmlFor="description">description</label>
             <input
               className="border border-stone-900 p-1"
               type="text"
-              name="text"
-              onChange={(e: any) => setText(e.target.value)}
+              name="description"
+              onChange={(e) =>
+                setCreate({ ...create, description: e.target.value })
+              }
+              required
+            />
+            <label htmlFor="url">url</label>
+            <input
+              className="border border-stone-900 p-1"
+              type="url"
+              name="url"
+              onChange={(e) => setCreate({ ...create, url: e.target.value })}
               required
             />
             <button
               className="my-3 p-2 border border-slate-900 rounded-full"
               type="submit"
             >
-              Upload
+              Create
             </button>
           </div>
         </form>
 
-        <h2 className="font-bold">Put</h2>
-        <form className="w-1/3" onSubmit={onSubmitPut}>
-          <div className="flex flex-col">
-            <label htmlFor="id">ID</label>
-            <input
-              className="border border-stone-900 p-1"
-              type="number"
-              name="id"
-              onChange={(e) => setId(parseInt(e.target.value))}
-            />
-          </div>
+        <form className="w-1/3 mt-10" onSubmit={editWorkData}>
+          <select
+            id="id"
+            className="border border-black"
+            onChange={(e) => complementDataById(e)}
+          >
+            <option value="" hidden>
+              選択してください
+            </option>
+            {data.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.id}
+              </option>
+            ))}
+          </select>
           <div className="my-2">
             <label htmlFor="image">Image</label>
             <input
               type="file"
               name="image"
-              onChange={(e: any) => setImage(e.target.files[0])}
-              required
+              onChange={(e: any) =>
+                setPut({ ...put, image: e.target.files[0] })
+              }
             />
           </div>
           <div className="flex flex-col mt-3">
-            <label htmlFor="text">text</label>
+            <label htmlFor="title">title</label>
+            <input
+              className="border border-stone-900 p-1"
+              type="title"
+              name="text"
+              value={put.title}
+              onChange={(e) => setPut({ ...put, title: e.target.value })}
+              required
+            />
+            <label htmlFor="description">description</label>
             <input
               className="border border-stone-900 p-1"
               type="text"
-              name="text"
-              onChange={(e: any) => setText(e.target.value)}
+              name="description"
+              value={put.description}
+              onChange={(e) => setPut({ ...put, description: e.target.value })}
+              required
+            />
+            <label htmlFor="url">url</label>
+            <input
+              className="border border-stone-900 p-1"
+              type="text"
+              name="url"
+              value={put.url}
+              onChange={(e) => setPut({ ...put, url: e.target.value })}
               required
             />
             <button
@@ -151,48 +210,29 @@ export default function FetchWorkData(): JSX.Element {
             </button>
           </div>
         </form>
-
-        <h2 className="font-bold">Delete</h2>
-        <form className="w-1/3" onSubmit={onSubmitDelete}>
-          <div className="flex flex-col">
-            <label htmlFor="delete">ID</label>
-            <input
-              className="border border-stone-900 p-1"
-              type="number"
-              name="delete"
-              onChange={(e) => setId(parseInt(e.target.value))}
-              required
-            />
-            <button
-              className="my-3 p-2 border border-slate-900 rounded-full"
-              type="submit"
-            >
-              Delete
-            </button>
-          </div>
-        </form>
       </div>
-      <div className="w-1/2 ">
-        <h2 className="font-bold">Get Image & Text</h2>
-        {data ? (
-          <ul className="grid grid-cols-2">
-            <div className="my-3">
-              <div className="flex flex-col">
-                <li>{data.id}</li>
-                <Image
-                  src={data.image}
-                  alt="トップ画像"
-                  width={250}
-                  height={200}
-                  priority
-                />
-                <li>{data.text}</li>
-              </div>
+
+      <div className="w-2/3">
+        <h2 className="font-bold">Get Works Data</h2>
+        <div className="grid grid-cols-2 space-x-5">
+          {data.map((i) => (
+            <div key={i.id} className="flex flex-col">
+              <div>{i.id}</div>
+              <Image
+                src={i.image}
+                alt="thumbnail"
+                width={250}
+                height={250}
+                priority
+              />
+              <div>title : {i.title}</div>
+              <div>description : {i.description}</div>
+              <Link className=" text-blue-500" href={i.url}>
+                {i.url}
+              </Link>
             </div>
-          </ul>
-        ) : (
-          <div className="font-bold">NO DATA</div>
-        )}
+          ))}
+        </div>
       </div>
     </div>
   );

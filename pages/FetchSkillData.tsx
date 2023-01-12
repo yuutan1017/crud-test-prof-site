@@ -8,7 +8,7 @@ type Skill = {
   color_code: string;
 };
 
-const BASE_URL = 'http://127.0.0.1:8000/api/skills';
+const BASE_URL = 'http://127.0.0.1:8000/api/skills/';
 const initialValue = { id: 0, category: 0, title: '', color_code: '' };
 const category_idx = [1, 2, 3];
 
@@ -47,7 +47,7 @@ export default function FetchSkillData(): JSX.Element {
       color_code: create.color_code,
     };
     await axios
-      .post(`${BASE_URL}/`, _data, config)
+      .post(BASE_URL, _data, config)
       .then(() => {
         setUpdated(!updated);
         setCreate(initialValue);
@@ -65,7 +65,7 @@ export default function FetchSkillData(): JSX.Element {
       color_code: put.color_code,
     };
     await axios
-      .put(`${BASE_URL}/${put.id}/`, _data, config)
+      .put(`${BASE_URL}${put.id}/`, _data, config)
       .then((res) => {
         if (res.data.id) {
           setUpdated(!updated);
@@ -78,7 +78,7 @@ export default function FetchSkillData(): JSX.Element {
   //削除
   const deleteSkillData = (): void => {
     axios
-      .delete(`${BASE_URL}/${put.id}/`)
+      .delete(`${BASE_URL}${put.id}/`)
       .then(() => alert('Delete Success'))
       .catch(() => alert('No exists ID'));
   };
