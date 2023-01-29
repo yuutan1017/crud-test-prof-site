@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import axios from 'axios';
+import axios, { Axios } from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -26,7 +26,6 @@ export default function FetchWorkData(): JSX.Element {
       'Content-Type': 'multipart/form-data',
     },
   };
-
   //Aboutページの一覧所得
   useEffect(() => {
     const fetchData = async () => {
@@ -61,7 +60,8 @@ export default function FetchWorkData(): JSX.Element {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append('image', put.image);
+    if (typeof put.image !== 'string')
+      formData.append('image', put.image);
     formData.append('title', put.title);
     formData.append('description', put.description);
     formData.append('url', put.url);
@@ -76,14 +76,19 @@ export default function FetchWorkData(): JSX.Element {
       .catch(() => alert('No exists ID'));
   };
 
-  // //Aboutページの削除（IDを指定してね）
-  // const onSubmitDelete = (): void => {
-  //   axios
-  //     .delete(`${BASE_URL}/api/about/${id}/`)
-  //     .then(() => alert('Delete Success'))
-  //     .catch(() => alert('No exists ID'));
-  // };
+  //Aboutページの削除（IDを指定してね）
+  const deleteWorkData = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    axios
+      .delete(`${BASE_URL}${put.id}/`)
+      .then(() => {
+        alert('Delete Success');
+        setUpdated(!updated);
+      })
+      .catch(() => alert('No exists ID'));
+  };
 
+  //IDを指定し、そのIDの情報をINPUTタグに補完する関数
   const complementDataById = (e: ChangeEvent<HTMLSelectElement>) => {
     const _id = parseInt(e.target.value);
     const _data = data.filter((i) => i.id === _id)[0];
@@ -119,6 +124,7 @@ export default function FetchWorkData(): JSX.Element {
               className="border border-stone-900 p-1"
               type="title"
               name="text"
+              value={create.title}
               onChange={(e) => setCreate({ ...create, title: e.target.value })}
               required
             />
@@ -127,6 +133,7 @@ export default function FetchWorkData(): JSX.Element {
               className="border border-stone-900 p-1"
               type="text"
               name="description"
+              value={create.description}
               onChange={(e) =>
                 setCreate({ ...create, description: e.target.value })
               }
@@ -137,6 +144,7 @@ export default function FetchWorkData(): JSX.Element {
               className="border border-stone-900 p-1"
               type="url"
               name="url"
+              value={create.url}
               onChange={(e) => setCreate({ ...create, url: e.target.value })}
               required
             />
@@ -209,6 +217,30 @@ export default function FetchWorkData(): JSX.Element {
               Edit
             </button>
           </div>
+        </form>
+        <form className="w-1/3 mt-10" onSubmit={deleteWorkData}>
+          <select
+            id="id"
+            className="border border-black"
+            onChange={(e) => {
+              setPut({ ...put, id: parseInt(e.target.value) });
+            }}
+          >
+            <option value="" hidden>
+              選択してください
+            </option>
+            {data.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.id}
+              </option>
+            ))}
+          </select>
+          <button
+            className="my-3 p-2 border border-slate-900 rounded-full"
+            type="submit"
+          >
+            Delete
+          </button>
         </form>
       </div>
 
