@@ -60,8 +60,7 @@ export default function FetchWorkData(): JSX.Element {
     e.preventDefault();
 
     const formData = new FormData();
-    if (typeof put.image !== 'string')
-      formData.append('image', put.image);
+    if (typeof put.image !== 'string') formData.append('image', put.image);
     formData.append('title', put.title);
     formData.append('description', put.description);
     formData.append('url', put.url);
@@ -72,6 +71,7 @@ export default function FetchWorkData(): JSX.Element {
       .put(`${BASE_URL}${put.id}/`, body, config)
       .then((res) => {
         if (res.data.id) setUpdated(!updated);
+        setPut(initialValue);
       })
       .catch(() => alert('No exists ID'));
   };
@@ -146,7 +146,6 @@ export default function FetchWorkData(): JSX.Element {
               name="url"
               value={create.url}
               onChange={(e) => setCreate({ ...create, url: e.target.value })}
-              required
             />
             <button
               className="my-3 p-2 border border-slate-900 rounded-full"
@@ -208,7 +207,6 @@ export default function FetchWorkData(): JSX.Element {
               name="url"
               value={put.url}
               onChange={(e) => setPut({ ...put, url: e.target.value })}
-              required
             />
             <button
               className="my-3 p-2 border border-slate-900 rounded-full"
